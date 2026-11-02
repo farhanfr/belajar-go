@@ -2,31 +2,72 @@ package main
 
 import "fmt"
 
-type User struct {
-	Name string
-	Age  int
+func withdraw(balance int, amount int) (int, error) {
+	if amount <= 0 {
+		return balance, fmt.Errorf("amount must be greater than zero")
+	}
+
+	if amount > balance {
+		return balance, fmt.Errorf("insufficient balance")
+	}
+
+	return balance - amount, nil
 }
 
-func updateWithoutPointer(user User) {
-	user.Age = 30
-}
+func transfer(balance int, amount int) (int, error) {
+	if amount <= 0 {
+		return balance, fmt.Errorf("amount must be greater than zero")
+	}
 
-func updateWithPointer(user *User) {
-	user.Age = 30
+	if amount > balance {
+		return balance, fmt.Errorf("insufficient balance")
+	}
+
+	return balance - amount, nil
 }
 
 func main() {
-	user := User{
-		Name: "Farhan",
-		Age:  25,
+	balance := 1000000
+	amount := 300000
+
+	// newBalance, err := withdraw(balance, amount)
+
+	newBalance, err := transfer(balance, amount)
+
+	if err != nil {
+		fmt.Println("Transaction failed:", err)
+		return
 	}
 
-	updateWithoutPointer(user)
-	fmt.Println("Without Pointer:", user.Age)
-
-	updateWithPointer(&user)
-	fmt.Println("With Pointer:", user.Age)
+	fmt.Println("Transaction successful")
+	fmt.Println("Remaining balance:", newBalance)
 }
+
+// type User struct {
+// 	Name string
+// 	Age  int
+// }
+
+// func updateWithoutPointer(user User) {
+// 	user.Age = 30
+// }
+
+// func updateWithPointer(user *User) {
+// 	user.Age = 30
+// }
+
+// func main() {
+// 	user := User{
+// 		Name: "Farhan",
+// 		Age:  25,
+// 	}
+
+// 	updateWithoutPointer(user)
+// 	fmt.Println("Without Pointer:", user.Age)
+
+// 	updateWithPointer(&user)
+// 	fmt.Println("With Pointer:", user.Age)
+// }
 
 // type Transaction struct {
 // 	ID     int
