@@ -3,10 +3,13 @@ package main
 import "fmt"
 
 func main() {
-    name := "Farhan"
-    age := 25
+	name := "Farhan"
+	age := 25
+	language := "PHP, JavaScript"
+	isLearningGo := true
 
-    fmt.Println("Hello, Go!")
-    fmt.Println("Nama:", name)
-    fmt.Println("Umur:", age)
+	fmt.Println(name)
+	fmt.Println(age)
+	fmt.Println(language)
+	fmt.Println(isLearningGo)
 }
