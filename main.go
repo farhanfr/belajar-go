@@ -2,50 +2,76 @@ package main
 
 import "fmt"
 
-type Transaction struct {
-	ID     int
-	Title  string
-	Amount int
+type User struct {
+	Name string
+	Age  int
 }
 
-func calculateTotal(transactions []Transaction) int {
-	total := 0
-	for _, transaction := range transactions {
-		total += transaction.Amount
-	}
-	return total
+func updateWithoutPointer(user User) {
+	user.Age = 30
 }
 
-func findTransaction(transactions []Transaction, id int) (Transaction, bool) {
-	for _, transaction := range transactions {
-		if transaction.ID == id {
-			return transaction, true
-		}
-	}
-	return Transaction{}, false
+func updateWithPointer(user *User) {
+	user.Age = 30
 }
 
 func main() {
-
-	transactions := []Transaction{
-		{ID: 1, Title: "Beli Baju", Amount: 100000},
-		{ID: 2, Title: "Beli Celana", Amount: 200000},
-		{ID: 3, Title: "Beli Sepatu", Amount: 150000},
-		{ID: 4, Title: "Beli Jaket", Amount: 300000},
-		{ID: 5, Title: "Beli Topi", Amount: 50000},
+	user := User{
+		Name: "Farhan",
+		Age:  25,
 	}
 
-	total := calculateTotal(transactions)
-	fmt.Println("Total Transaction: ", total)
+	updateWithoutPointer(user)
+	fmt.Println("Without Pointer:", user.Age)
 
-	transaction, found := findTransaction(transactions, 3)
-	if found {
-		fmt.Println("ID: ", transaction.ID, "Title: ", transaction.Title, "Amount: ", transaction.Amount)
-	} else {
-		fmt.Println("Transaction not found")
-	}
-
+	updateWithPointer(&user)
+	fmt.Println("With Pointer:", user.Age)
 }
+
+// type Transaction struct {
+// 	ID     int
+// 	Title  string
+// 	Amount int
+// }
+
+// func calculateTotal(transactions []Transaction) int {
+// 	total := 0
+// 	for _, transaction := range transactions {
+// 		total += transaction.Amount
+// 	}
+// 	return total
+// }
+
+// func findTransaction(transactions []Transaction, id int) (Transaction, bool) {
+// 	for _, transaction := range transactions {
+// 		if transaction.ID == id {
+// 			return transaction, true
+// 		}
+// 	}
+// 	return Transaction{}, false
+// }
+
+// func main() {
+
+// 	transactions := []Transaction{
+// 		{ID: 1, Title: "Beli Baju", Amount: 100000},
+// 		{ID: 2, Title: "Beli Celana", Amount: 200000},
+// 		{ID: 3, Title: "Beli Sepatu", Amount: 150000},
+// 		{ID: 4, Title: "Beli Jaket", Amount: 300000},
+// 		{ID: 5, Title: "Beli Topi", Amount: 50000},
+// 	}
+
+// 	total := calculateTotal(transactions)
+// 	fmt.Println("Total Transaction: ", total)
+
+// 	transaction, found := findTransaction(transactions, 3)
+// 	if found {
+// 		fmt.Println("ID: ", transaction.ID, "Title: ", transaction.Title, "Amount: ", transaction.Amount)
+// 	} else {
+// 		fmt.Println("Transaction not found")
+// 	}
+
+// }
 
 // package main
 
