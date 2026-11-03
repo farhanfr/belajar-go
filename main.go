@@ -1,47 +1,80 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-func withdraw(balance int, amount int) (int, error) {
-	if amount <= 0 {
-		return balance, fmt.Errorf("amount must be greater than zero")
-	}
-
-	if amount > balance {
-		return balance, fmt.Errorf("insufficient balance")
-	}
-
-	return balance - amount, nil
-}
-
-func transfer(balance int, amount int) (int, error) {
-	if amount <= 0 {
-		return balance, fmt.Errorf("amount must be greater than zero")
-	}
-
-	if amount > balance {
-		return balance, fmt.Errorf("insufficient balance")
-	}
-
-	return balance - amount, nil
+type User struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Age   int    `json:"age"`
 }
 
 func main() {
-	balance := 1000000
-	amount := 300000
+	jsonData := `{
+		"id": 1,
+		"name": "Farhan",
+		"email": "sZm9o@example.com",
+		"age": 25
+    }`
 
-	// newBalance, err := withdraw(balance, amount)
+	var user User
 
-	newBalance, err := transfer(balance, amount)
+	err := json.Unmarshal([]byte(jsonData), &user)
 
 	if err != nil {
-		fmt.Println("Transaction failed:", err)
+		fmt.Println("Error:", err)
 		return
 	}
 
-	fmt.Println("Transaction successful")
-	fmt.Println("Remaining balance:", newBalance)
+	fmt.Println("ID:", user.ID)
+	fmt.Println("Name:", user.Name)
+	fmt.Println("Email:", user.Email)
+	fmt.Println("Age:", user.Age)
 }
+
+// func withdraw(balance int, amount int) (int, error) {
+// 	if amount <= 0 {
+// 		return balance, fmt.Errorf("amount must be greater than zero")
+// 	}
+
+// 	if amount > balance {
+// 		return balance, fmt.Errorf("insufficient balance")
+// 	}
+
+// 	return balance - amount, nil
+// }
+
+// func transfer(balance int, amount int) (int, error) {
+// 	if amount <= 0 {
+// 		return balance, fmt.Errorf("amount must be greater than zero")
+// 	}
+
+// 	if amount > balance {
+// 		return balance, fmt.Errorf("insufficient balance")
+// 	}
+
+// 	return balance - amount, nil
+// }
+
+// func main() {
+// 	balance := 1000000
+// 	amount := 300000
+
+// 	// newBalance, err := withdraw(balance, amount)
+
+// 	newBalance, err := transfer(balance, amount)
+
+// 	if err != nil {
+// 		fmt.Println("Transaction failed:", err)
+// 		return
+// 	}
+
+// 	fmt.Println("Transaction successful")
+// 	fmt.Println("Remaining balance:", newBalance)
+// }
 
 // type User struct {
 // 	Name string
