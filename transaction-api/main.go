@@ -53,6 +53,101 @@ func getTransactions(db *sql.DB) {
 	}
 }
 
+func getTransactionByID(db *sql.DB, id int) {
+	var transaction models.Transaction
+
+	err := db.QueryRow(
+		"SELECT id, title, amount FROM transactions WHERE id = $1",
+		id,
+	).Scan(
+		&transaction.ID,
+		&transaction.Title,
+		&transaction.Amount,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("Transaction not found")
+			return
+		}
+
+		log.Println("Query failed:", err)
+		return
+	}
+
+	fmt.Println("ID:", transaction.ID)
+	fmt.Println("Title:", transaction.Title)
+	fmt.Println("Amount:", transaction.Amount)
+}
+
+func createTransaction(db *sql.DB, transaction models.Transaction) (int, error) {
+	var id int
+
+	err := db.QueryRow(
+		`INSERT INTO transactions (title, amount)
+         VALUES ($1, $2)
+         RETURNING id`,
+		transaction.Title,
+		transaction.Amount,
+	).Scan(&id)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func updateTransaction(db *sql.DB, id int, transaction models.Transaction) error {
+	result, err := db.Exec(
+		`UPDATE transactions
+         SET title = $1, amount = $2
+         WHERE id = $3`,
+		transaction.Title,
+		transaction.Amount,
+		id,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("transaction not found")
+	}
+
+	return nil
+}
+
+func deleteTransaction(db *sql.DB, id int) error {
+	result, err := db.Exec(
+		"DELETE FROM transactions WHERE id = $1",
+		id,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("transaction not found")
+	}
+
+	return nil
+}
+
 func main() {
 	if err := godotenv.Overload(); err != nil {
 		log.Fatal(err)
@@ -69,4 +164,6 @@ func main() {
 	fmt.Println("PostgreSQL connected successfully!")
 
 	getTransactions(db)
+
+	getTransactionByID(db, 1)
 }
