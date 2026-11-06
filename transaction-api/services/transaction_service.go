@@ -2,46 +2,75 @@ package services
 
 import (
 	"errors"
+	"strings"
+
 	"transaction-api/models"
 	"transaction-api/repositories"
 )
 
 type TransactionService struct {
-	repo *repositories.TransactionRepository
+	repository *repositories.TransactionRepository
 }
 
-func NewTransactionService(repo *repositories.TransactionRepository) *TransactionService {
-	return &TransactionService{repo: repo}
+func NewTransactionService(repository *repositories.TransactionRepository) *TransactionService {
+	return &TransactionService{
+		repository: repository,
+	}
 }
 
-func (s *TransactionService) GetAll() []models.Transaction {
-	return s.repo.FindAll()
+// Get all transactions
+func (s *TransactionService) GetAll() ([]models.Transaction, error) {
+	return s.repository.FindAll()
 }
 
+// Get transaction by ID
 func (s *TransactionService) GetByID(id int) (models.Transaction, error) {
-	transaction, found := s.repo.FindByID(id)
-
-	if !found {
-		return models.Transaction{}, errors.New("transaction not found")
+	if id <= 0 {
+		return models.Transaction{}, errors.New("invalid transaction ID")
 	}
 
-	return transaction, nil
+	return s.repository.FindByID(id)
 }
 
-func (s *TransactionService) Create(transaction models.Transaction) models.Transaction {
-	return s.repo.Create(transaction)
+// Create transaction
+func (s *TransactionService) Create(transaction models.Transaction) (models.Transaction, error) {
+	transaction.Title = strings.TrimSpace(transaction.Title)
+
+	if transaction.Title == "" {
+		return models.Transaction{}, errors.New("title is required")
+	}
+
+	if transaction.Amount <= 0 {
+		return models.Transaction{}, errors.New("amount must be greater than zero")
+	}
+
+	return s.repository.Create(transaction)
 }
 
+// Update transaction
 func (s *TransactionService) Update(id int, transaction models.Transaction) (models.Transaction, error) {
-	updated, found := s.repo.Update(id, transaction)
-
-	if !found {
-		return models.Transaction{}, errors.New("transaction not found")
+	if id <= 0 {
+		return models.Transaction{}, errors.New("invalid transaction ID")
 	}
 
-	return updated, nil
+	transaction.Title = strings.TrimSpace(transaction.Title)
+
+	if transaction.Title == "" {
+		return models.Transaction{}, errors.New("title is required")
+	}
+
+	if transaction.Amount <= 0 {
+		return models.Transaction{}, errors.New("amount must be greater than zero")
+	}
+
+	return s.repository.Update(id, transaction)
 }
 
-func (s *TransactionService) Delete(id int) {
-	s.repo.Delete(id)
+// Delete transaction
+func (s *TransactionService) Delete(id int) error {
+	if id <= 0 {
+		return errors.New("invalid transaction ID")
+	}
+
+	return s.repository.Delete(id)
 }
