@@ -3,11 +3,13 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/joho/godotenv"
 
 	"transaction-api/config"
 	"transaction-api/handlers"
+	"transaction-api/middlewares"
 	"transaction-api/repositories"
 	"transaction-api/services"
 )
@@ -27,9 +29,24 @@ func main() {
 	service := services.NewTransactionService(repository)
 	handler := handlers.NewTransactionHandler(service)
 
-	http.HandleFunc("/transactions", handler.HandleCollection)
-	http.HandleFunc("/transactions/", handler.HandleItem)
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/transactions", handler.HandleCollection)
+	mux.HandleFunc("/transactions/", handler.HandleItem)
+	mux.HandleFunc("/panic", func(w http.ResponseWriter, r *http.Request) {
+		panic("testing recovery middleware")
+	})
+
+	app := middlewares.Logging(
+		middlewares.Recovery(mux),
+	)
+
+	server := &http.Server{
+		Addr:              ":8080",
+		Handler:           app,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
 
 	log.Println("Server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(server.ListenAndServe())
 }

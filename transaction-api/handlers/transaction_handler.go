@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"transaction-api/models"
 	"transaction-api/services"
@@ -25,9 +27,12 @@ func NewTransactionHandler(service *services.TransactionService) *TransactionHan
 // GET /transactions
 // POST /transactions
 func (h *TransactionHandler) HandleCollection(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
 	switch r.Method {
 	case http.MethodGet:
-		transactions, err := h.service.GetAll()
+		transactions, err := h.service.GetAll(ctx)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to get transactions")
 			return
@@ -43,7 +48,7 @@ func (h *TransactionHandler) HandleCollection(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		created, err := h.service.Create(transaction)
+		created, err := h.service.Create(ctx, transaction)
 		if err != nil {
 			writeError(w, http.StatusBadRequest, err.Error())
 			return
@@ -68,9 +73,12 @@ func (h *TransactionHandler) HandleItem(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
 	switch r.Method {
 	case http.MethodGet:
-		transaction, err := h.service.GetByID(id)
+		transaction, err := h.service.GetByID(ctx, id)
 		if err != nil {
 			handleServiceError(w, err)
 			return
@@ -86,7 +94,7 @@ func (h *TransactionHandler) HandleItem(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		updated, err := h.service.Update(id, transaction)
+		updated, err := h.service.Update(ctx, id, transaction)
 		if err != nil {
 			handleServiceError(w, err)
 			return
@@ -95,7 +103,7 @@ func (h *TransactionHandler) HandleItem(w http.ResponseWriter, r *http.Request) 
 		writeJSON(w, http.StatusOK, updated)
 
 	case http.MethodDelete:
-		if err := h.service.Delete(id); err != nil {
+		if err := h.service.Delete(ctx, id); err != nil {
 			handleServiceError(w, err)
 			return
 		}

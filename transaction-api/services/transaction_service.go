@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"strings"
 
@@ -8,11 +9,11 @@ import (
 )
 
 type TransactionRepository interface {
-	FindAll() ([]models.Transaction, error)
-	FindByID(id int) (models.Transaction, error)
-	Create(transaction models.Transaction) (models.Transaction, error)
-	Update(id int, transaction models.Transaction) (models.Transaction, error)
-	Delete(id int) error
+	FindAll(ctx context.Context) ([]models.Transaction, error)
+	FindByID(ctx context.Context, id int) (models.Transaction, error)
+	Create(ctx context.Context, transaction models.Transaction) (models.Transaction, error)
+	Update(ctx context.Context, id int, transaction models.Transaction) (models.Transaction, error)
+	Delete(ctx context.Context, id int) error
 }
 
 type TransactionService struct {
@@ -25,19 +26,19 @@ func NewTransactionService(repository TransactionRepository) *TransactionService
 	}
 }
 
-func (s *TransactionService) GetAll() ([]models.Transaction, error) {
-	return s.repository.FindAll()
+func (s *TransactionService) GetAll(ctx context.Context) ([]models.Transaction, error) {
+	return s.repository.FindAll(ctx)
 }
 
-func (s *TransactionService) GetByID(id int) (models.Transaction, error) {
+func (s *TransactionService) GetByID(ctx context.Context, id int) (models.Transaction, error) {
 	if id <= 0 {
 		return models.Transaction{}, errors.New("invalid transaction ID")
 	}
 
-	return s.repository.FindByID(id)
+	return s.repository.FindByID(ctx, id)
 }
 
-func (s *TransactionService) Create(transaction models.Transaction) (models.Transaction, error) {
+func (s *TransactionService) Create(ctx context.Context, transaction models.Transaction) (models.Transaction, error) {
 	transaction.Title = strings.TrimSpace(transaction.Title)
 
 	if transaction.Title == "" {
@@ -48,10 +49,10 @@ func (s *TransactionService) Create(transaction models.Transaction) (models.Tran
 		return models.Transaction{}, errors.New("amount must be greater than zero")
 	}
 
-	return s.repository.Create(transaction)
+	return s.repository.Create(ctx, transaction)
 }
 
-func (s *TransactionService) Update(id int, transaction models.Transaction) (models.Transaction, error) {
+func (s *TransactionService) Update(ctx context.Context, id int, transaction models.Transaction) (models.Transaction, error) {
 	if id <= 0 {
 		return models.Transaction{}, errors.New("invalid transaction ID")
 	}
@@ -66,13 +67,13 @@ func (s *TransactionService) Update(id int, transaction models.Transaction) (mod
 		return models.Transaction{}, errors.New("amount must be greater than zero")
 	}
 
-	return s.repository.Update(id, transaction)
+	return s.repository.Update(ctx, id, transaction)
 }
 
-func (s *TransactionService) Delete(id int) error {
+func (s *TransactionService) Delete(ctx context.Context, id int) error {
 	if id <= 0 {
 		return errors.New("invalid transaction ID")
 	}
 
-	return s.repository.Delete(id)
+	return s.repository.Delete(ctx, id)
 }

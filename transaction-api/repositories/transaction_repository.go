@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
 	"transaction-api/models"
 )
@@ -14,8 +15,9 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 }
 
 // Get all transactions
-func (r *TransactionRepository) FindAll() ([]models.Transaction, error) {
-	rows, err := r.db.Query(
+func (r *TransactionRepository) FindAll(ctx context.Context) ([]models.Transaction, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
 		"SELECT id, title, amount FROM transactions ORDER BY id",
 	)
 
@@ -30,13 +32,11 @@ func (r *TransactionRepository) FindAll() ([]models.Transaction, error) {
 	for rows.Next() {
 		var transaction models.Transaction
 
-		err := rows.Scan(
+		if err := rows.Scan(
 			&transaction.ID,
 			&transaction.Title,
 			&transaction.Amount,
-		)
-
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 
@@ -51,10 +51,11 @@ func (r *TransactionRepository) FindAll() ([]models.Transaction, error) {
 }
 
 // Get transaction by ID
-func (r *TransactionRepository) FindByID(id int) (models.Transaction, error) {
+func (r *TransactionRepository) FindByID(ctx context.Context, id int) (models.Transaction, error) {
 	var transaction models.Transaction
 
-	err := r.db.QueryRow(
+	err := r.db.QueryRowContext(
+		ctx,
 		"SELECT id, title, amount FROM transactions WHERE id = $1",
 		id,
 	).Scan(
@@ -71,8 +72,9 @@ func (r *TransactionRepository) FindByID(id int) (models.Transaction, error) {
 }
 
 // Create transaction
-func (r *TransactionRepository) Create(transaction models.Transaction) (models.Transaction, error) {
-	err := r.db.QueryRow(
+func (r *TransactionRepository) Create(ctx context.Context, transaction models.Transaction) (models.Transaction, error) {
+	err := r.db.QueryRowContext(
+		ctx,
 		`INSERT INTO transactions (title, amount)
          VALUES ($1, $2)
          RETURNING id`,
@@ -88,8 +90,9 @@ func (r *TransactionRepository) Create(transaction models.Transaction) (models.T
 }
 
 // Update transaction
-func (r *TransactionRepository) Update(id int, transaction models.Transaction) (models.Transaction, error) {
-	err := r.db.QueryRow(
+func (r *TransactionRepository) Update(ctx context.Context, id int, transaction models.Transaction) (models.Transaction, error) {
+	err := r.db.QueryRowContext(
+		ctx,
 		`UPDATE transactions
          SET title = $1, amount = $2
          WHERE id = $3
@@ -111,8 +114,9 @@ func (r *TransactionRepository) Update(id int, transaction models.Transaction) (
 }
 
 // Delete transaction
-func (r *TransactionRepository) Delete(id int) error {
-	result, err := r.db.Exec(
+func (r *TransactionRepository) Delete(ctx context.Context, id int) error {
+	result, err := r.db.ExecContext(
+		ctx,
 		"DELETE FROM transactions WHERE id = $1",
 		id,
 	)
@@ -122,7 +126,6 @@ func (r *TransactionRepository) Delete(id int) error {
 	}
 
 	affected, err := result.RowsAffected()
-
 	if err != nil {
 		return err
 	}
