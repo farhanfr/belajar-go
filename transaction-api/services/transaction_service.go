@@ -5,25 +5,30 @@ import (
 	"strings"
 
 	"transaction-api/models"
-	"transaction-api/repositories"
 )
 
-type TransactionService struct {
-	repository *repositories.TransactionRepository
+type TransactionRepository interface {
+	FindAll() ([]models.Transaction, error)
+	FindByID(id int) (models.Transaction, error)
+	Create(transaction models.Transaction) (models.Transaction, error)
+	Update(id int, transaction models.Transaction) (models.Transaction, error)
+	Delete(id int) error
 }
 
-func NewTransactionService(repository *repositories.TransactionRepository) *TransactionService {
+type TransactionService struct {
+	repository TransactionRepository
+}
+
+func NewTransactionService(repository TransactionRepository) *TransactionService {
 	return &TransactionService{
 		repository: repository,
 	}
 }
 
-// Get all transactions
 func (s *TransactionService) GetAll() ([]models.Transaction, error) {
 	return s.repository.FindAll()
 }
 
-// Get transaction by ID
 func (s *TransactionService) GetByID(id int) (models.Transaction, error) {
 	if id <= 0 {
 		return models.Transaction{}, errors.New("invalid transaction ID")
@@ -32,7 +37,6 @@ func (s *TransactionService) GetByID(id int) (models.Transaction, error) {
 	return s.repository.FindByID(id)
 }
 
-// Create transaction
 func (s *TransactionService) Create(transaction models.Transaction) (models.Transaction, error) {
 	transaction.Title = strings.TrimSpace(transaction.Title)
 
@@ -47,7 +51,6 @@ func (s *TransactionService) Create(transaction models.Transaction) (models.Tran
 	return s.repository.Create(transaction)
 }
 
-// Update transaction
 func (s *TransactionService) Update(id int, transaction models.Transaction) (models.Transaction, error) {
 	if id <= 0 {
 		return models.Transaction{}, errors.New("invalid transaction ID")
@@ -66,7 +69,6 @@ func (s *TransactionService) Update(id int, transaction models.Transaction) (mod
 	return s.repository.Update(id, transaction)
 }
 
-// Delete transaction
 func (s *TransactionService) Delete(id int) error {
 	if id <= 0 {
 		return errors.New("invalid transaction ID")
